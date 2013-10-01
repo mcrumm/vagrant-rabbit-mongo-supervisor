@@ -3,6 +3,8 @@ Exec { path => [ '/bin/', '/sbin/', '/usr/bin/', '/usr/sbin/' ] }
 File { owner => 0, group => 0, mode => 0644 }
 
 $real_hostname = "${::hostname}.dev"
+$docroot       = "/var/www/${real_hostname}"
+$real_docroot  = "${docroot}/web"
 
 class {'apt':
   always_apt_update => true,
@@ -62,7 +64,7 @@ apache::module { 'rewrite': }
 apache::vhost { $real_hostname:
   template      => '/vagrant/files/apache/vhost.conf.erb',
   server_name   => $real_hostname,
-  docroot       => "/var/www/${real_hostname}/web",
+  docroot       => $real_docroot,
   port          => '80',
   priority      => '1',
   directory_options => 'FollowSymlinks'
@@ -136,11 +138,11 @@ puphpet::ini { 'custom':
 
 class { 'supervisord': }
 
-supervisord::program { 'stagify':
+supervisord::program { 'stagehand':
   command           => '/usr/bin/env php app/console rabbitmq:consumer -m 20 stagify --env=dev',
   user              => 'vagrant-root',
-  directory         => '/var/www/stagehand.dev',
-  stdout_logfile    => '/var/www/stagehand.dev/app/logs/dev.log'
+  directory         => $docroot,
+  stdout_logfile    => "${docroot}/app/logs/dev.log"
 }
 
 class { 'mongodb':
