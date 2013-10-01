@@ -25,12 +25,12 @@
 [submodule "modules/rabbitmq"]
 	path = modules/rabbitmq
 	url = http://github.com/puppetlabs/puppetlabs-rabbitmq
-[submodule "modules/supervisord"]
-	path = modules/supervisord
-	url = http://github.com/adedommelin/puppet-supervisord
 [submodule "modules/vcsrepo"]
 	path = modules/vcsrepo
 	url = http://github.com/puppetlabs/puppetlabs-vcsrepo
 [submodule "modules/xdebug"]
 	path = modules/xdebug
 	url = http://github.com/puphpet/puphpet-xdebug
+[submodule "modules/supervisord"]
+	path = modules/supervisord
+	url = http://github.com/mcrumm/puppet-supervisord
