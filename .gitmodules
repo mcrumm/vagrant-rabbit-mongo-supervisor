@@ -1,3 +1,36 @@
 [submodule "modules/apache"]
 	path = modules/apache
 	url = http://github.com/example42/puppet-apache
+[submodule "modules/apt"]
+	path = modules/apt
+	url = http://github.com/puppetlabs/puppetlabs-apt
+[submodule "modules/stdlib"]
+	path = modules/stdlib
+	url = http://github.com/puppetlabs/puppetlabs-stdlib
+[submodule "modules/composer"]
+	path = modules/composer
+	url = http://github.com/puphpet/puphpet-composer
+[submodule "modules/mongodb"]
+	path = modules/mongodb
+	url = http://github.com/puppetlabs/puppetlabs-mongodb
+[submodule "modules/puppi"]
+	path = modules/puppi
+	url = http://github.com/example42/puppi
+[submodule "modules/php"]
+	path = modules/php
+	url = http://github.com/example42/puppet-php
+[submodule "modules/puphpet"]
+	path = modules/puphpet
+	url = http://github.com/puphpet/puppet-puphpet
+[submodule "modules/rabbitmq"]
+	path = modules/rabbitmq
+	url = http://github.com/puppetlabs/puppetlabs-rabbitmq
+[submodule "modules/supervisord"]
+	path = modules/supervisord
+	url = http://github.com/adedommelin/puppet-supervisord
+[submodule "modules/vcsrepo"]
+	path = modules/vcsrepo
+	url = http://github.com/puppetlabs/puppetlabs-vcsrepo
+[submodule "modules/xdebug"]
+	path = modules/xdebug
+	url = http://github.com/puphpet/puphpet-xdebug
