@@ -47,7 +47,6 @@ class { 'puphpet::dotfiles': }
 package { [
     'build-essential',
     'vim',
-    'curl',
     'git-core'
   ]:
   ensure  => 'installed',
