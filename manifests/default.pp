@@ -39,7 +39,7 @@ if $lsbdistcodename == 'squeeze' {
 
 package { 'apache2-mpm-prefork':
   ensure => 'installed',
-  notify => Service['apache'],
+  notify => Service['apache']
 }
 
 class { 'puphpet::dotfiles': }
@@ -49,13 +49,13 @@ package { [
     'vim',
     'git-core'
   ]:
-  ensure  => 'installed',
+  ensure  => 'installed'
 }
 
 class { 'apache': }
 
 apache::dotconf { 'custom':
-  content => 'EnableSendfile Off',
+  content => 'EnableSendfile Off'
 }
 
 apache::module { 'rewrite': }
@@ -72,7 +72,7 @@ apache::vhost { $real_hostname:
 class { 'php':
   service             => 'apache',
   service_autorestart => false,
-  module_prefix       => '',
+  module_prefix       => ''
 }
 
 php::module { 'php5-cli': }
@@ -82,11 +82,11 @@ php::module { 'php5-mcrypt': }
 php::module { 'php5-mongo': }
 
 class { 'php::devel':
-  require => Class['php'],
+  require => Class['php']
 }
 
 class { 'php::pear':
-  require => Class['php'],
+  require => Class['php']
 }
 
 if !defined(Package['git-core']) {
@@ -95,11 +95,11 @@ if !defined(Package['git-core']) {
 
 
 class { 'xdebug':
-  service => 'apache',
+  service => 'apache'
 }
 
 class { 'composer':
-  require => Package['php5', 'curl'],
+  require => [ Package['php5'], Class['::nodejs'] ]
 }
 
 puphpet::ini { 'xdebug':
@@ -113,7 +113,7 @@ puphpet::ini { 'xdebug':
   ],
   ini     => '/etc/php5/conf.d/zzz_xdebug.ini',
   notify  => Service['apache'],
-  require => Class['php'],
+  require => Class['php']
 }
 
 puphpet::ini { 'php':
@@ -122,7 +122,7 @@ puphpet::ini { 'php':
   ],
   ini     => '/etc/php5/conf.d/zzz_php.ini',
   notify  => Service['apache'],
-  require => Class['php'],
+  require => Class['php']
 }
 
 puphpet::ini { 'custom':
@@ -132,7 +132,7 @@ puphpet::ini { 'custom':
   ],
   ini     => '/etc/php5/conf.d/zzz_custom.ini',
   notify  => Service['apache'],
-  require => Class['php'],
+  require => Class['php']
 }
 
 class { 'supervisord': }
@@ -156,9 +156,10 @@ package { [ 'python', 'g++', 'wget', 'tar' ]:
 }
 
 class { '::nodejs':
-  version => 'v0.10.20',
+  version => 'v0.10.20'
 }
 
 package { [ 'bower', 'less', 'uglify-js', 'uglifycss' ]:
-  provider => 'npm'
+  provider => 'npm',
+  require  => Class['::nodejs']
 }
