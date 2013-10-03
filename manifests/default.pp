@@ -150,3 +150,16 @@ class { 'mongodb':
 }
 
 include '::rabbitmq'
+
+package { [ 'python', 'g++', 'wget', 'tar' ]:
+  ensure => present,
+  before => Class['::nodejs']
+}
+
+class { '::nodejs':
+  version => 'v0.10.15',
+}
+
+package { [ 'bower', 'less', 'uglify-js', 'uglifycss' ]:
+  provider => 'npm'
+}
