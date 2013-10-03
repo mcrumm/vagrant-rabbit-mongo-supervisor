@@ -156,7 +156,8 @@ package { [ 'python', 'g++', 'wget', 'tar' ]:
 }
 
 class { '::nodejs':
-  version => 'v0.10.20'
+  version     => 'v0.10.20',
+  manage_repo => true
 }
 
 package { [ 'bower', 'less', 'uglify-js', 'uglifycss' ]:
