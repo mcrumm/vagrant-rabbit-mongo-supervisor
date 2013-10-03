@@ -34,9 +34,6 @@
 [submodule "modules/supervisord"]
 	path = modules/supervisord
 	url = http://github.com/mcrumm/puppet-supervisord
-[submodule "modules/nodejs"]
-	path = modules/nodejs
-	url = https://github.com/willdurand/puppet-nodejs
 [submodule "modules/wget"]
 	path = modules/wget
 	url = http://github.com/maestrodev/puppet-wget.git
