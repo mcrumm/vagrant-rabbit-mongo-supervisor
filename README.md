@@ -13,6 +13,16 @@ $ cp Vagrantfile.example Vagrantfile
 $ vagrant up
 ```
 
+## Updating
+
+```bash
+$ cd ~/vagrant/mybox
+$ git pull
+$ git submodule init
+$ git submodule update
+$ vagrant reload
+```
+
 ## Configuration
 
 ```bash
