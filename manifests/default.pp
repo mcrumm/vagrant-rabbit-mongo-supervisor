@@ -6,12 +6,18 @@ $real_hostname = "${::hostname}.dev"
 $docroot       = "/var/www/${real_hostname}"
 $real_docroot  = "${docroot}/web"
 
-class {'apt':
-  always_apt_update => true,
+class { 'apt':
+  always_apt_update    => true,
+  purge_sources_list   => true,
+  purge_sources_list_d => true
 }
 
 Class['::apt::update'] -> Package <|
-    title != 'python-software-properties'
+    title != 'python'
+and title != 'g++'
+and title != 'wget'
+and title != 'tar'
+and title != 'python-software-properties'
 and title != 'software-properties-common'
 |>
 
@@ -156,7 +162,6 @@ package { [ 'python', 'g++', 'wget', 'tar' ]:
 }
 
 class { '::nodejs':
-  version     => 'v0.10.20',
   manage_repo => true
 }
 
