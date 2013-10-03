@@ -37,3 +37,6 @@
 [submodule "modules/wget"]
 	path = modules/wget
 	url = http://github.com/maestrodev/puppet-wget.git
+[submodule "modules/nodejs"]
+	path = modules/nodejs
+	url = https://github.com/puppetlabs/puppetlabs-nodejs.git
