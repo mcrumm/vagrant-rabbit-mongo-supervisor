@@ -7,9 +7,6 @@
 [submodule "modules/stdlib"]
 	path = modules/stdlib
 	url = http://github.com/puppetlabs/puppetlabs-stdlib
-[submodule "modules/composer"]
-	path = modules/composer
-	url = http://github.com/puphpet/puphpet-composer
 [submodule "modules/mongodb"]
 	path = modules/mongodb
 	url = http://github.com/puppetlabs/puppetlabs-mongodb
