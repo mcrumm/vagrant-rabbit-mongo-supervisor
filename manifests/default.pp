@@ -53,14 +53,25 @@ package { [
 
 class { 'apache': }
 
+include apache::ssl
+
 apache::module { 'rewrite': }
 
 apache::vhost { $real_hostname:
-  template      => '/vagrant/files/apache/vhost.conf.erb',
-  server_name   => $real_hostname,
-  docroot       => $real_docroot,
-  port          => '80',
-  priority      => '1',
+  template          => '/vagrant/files/apache/vhost.conf.erb',
+  server_name       => $real_hostname,
+  docroot           => $real_docroot,
+  port              => '80',
+  priority          => '1',
+  directory_options => 'FollowSymlinks'
+}
+
+apache::vhost { "${real_hostname}-ssl":
+  template          => '/vagrant/files/apache/vhost-ssl.conf.erb',
+  server_name       => $real_hostname,
+  docroot           => $real_docroot,
+  port              => '443',
+  priority          => '1',
   directory_options => 'FollowSymlinks'
 }
 
