@@ -12,7 +12,7 @@ Vagrant.configure("2") do |config|
     host_address = "10.100.12.101"
 
     app.vm.box     = "mybox"
-    app.vm.box_url = "http://mcrumm.s3.amazonaws.com/vagrant/boxes/debian-71-x64-vbox4218.box"
+    app.vm.box_url = "http://cdn.crumm.net/vagrant/boxes/debian-71-x64-vbox4218.box"
 
     app.vm.network :private_network, ip: host_address
     app.ssh.forward_agent = true
