@@ -197,6 +197,13 @@ supervisord::program { 'stagehand':
   stdout_logfile    => "${docroot}/app/logs/dev.log"
 }
 
+supervisord::program { 'assetic':
+  command           => '/usr/bin/env php app/console assetic:dump --watch --env=dev',
+  user              => 'root',
+  directory         => $docroot,
+  stdout_logfile    => "${docroot}/app/logs/dev.log"
+}
+
 class { 'mongodb':
   enable_10gen => true
 }
