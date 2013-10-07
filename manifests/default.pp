@@ -1,5 +1,5 @@
 group { 'puppet': ensure => present }
-Exec { path => [ '/bin/', '/sbin/', '/usr/bin/', '/usr/sbin/' ] }
+Exec { path => [ '/bin/', '/sbin/', '/usr/local/bin/', '/usr/bin/', '/usr/sbin/' ] }
 File { owner => 0, group => 0, mode => 0644 }
 
 $real_hostname = "${::hostname}.dev"
@@ -9,38 +9,31 @@ $real_docroot  = "${docroot}/web"
 class { 'apt':
   always_apt_update    => true,
   purge_sources_list   => true,
-  purge_sources_list_d => true
+  purge_sources_list_d => true,
+  purge_preferences_d  => true
 }
 
 Class['::apt::update'] -> Package <|
-    title != 'python'
-and title != 'g++'
-and title != 'wget'
-and title != 'tar'
-and title != 'python-software-properties'
+    title != 'python-software-properties'
 and title != 'software-properties-common'
 |>
 
-apt::source { 'packages.dotdeb.org':
-  location          => 'http://packages.dotdeb.org',
-  release           => $lsbdistcodename,
-  repos             => 'all',
-  required_packages => 'debian-keyring debian-archive-keyring',
-  key               => '89DF5277',
-  key_server        => 'keys.gnupg.net',
-  include_src       => true
+apt::source { 'debian':
+  location    => 'http://ftp.us.debian.org/debian',
+  release     => $lsbdistcodename,
+  repos       => 'main contrib non-free',
+  key         => '89DF5277',
+  key_server  => 'keys.gnupg.net',
+  include_src => true
 }
 
-if $lsbdistcodename == 'squeeze' {
-  apt::source { 'packages.dotdeb.org-php54':
-    location          => 'http://packages.dotdeb.org',
-    release           => 'squeeze-php54',
-    repos             => 'all',
-    required_packages => 'debian-keyring debian-archive-keyring',
-    key               => '89DF5277',
-    key_server        => 'keys.gnupg.net',
-    include_src       => true
-  }
+apt::source { 'testing':
+  location    => 'http://ftp.us.debian.org/debian',
+  release     => 'testing',
+  repos       => 'main contrib non-free',
+  key         => '89DF5277',
+  key_server  => 'keys.gnupg.net',
+  include_src => true
 }
 
 package { 'apache2-mpm-prefork':
@@ -60,10 +53,6 @@ package { [
 
 class { 'apache': }
 
-apache::dotconf { 'custom':
-  content => 'EnableSendfile Off'
-}
-
 apache::module { 'rewrite': }
 
 apache::vhost { $real_hostname:
@@ -77,15 +66,36 @@ apache::vhost { $real_hostname:
 
 class { 'php':
   service             => 'apache',
-  service_autorestart => false,
+  service_autorestart => true,
   module_prefix       => ''
 }
 
-php::module { 'php5-cli': }
+$php_path     = "/etc/php5"
+$php_modules  = "${php_path}/mods-available"
+$php_apache   = "${php_path}/apache2"
+$php_cli      = "${php_path}/cli"
+$php_conf     = "conf.d"
+$php_custom   = "${php_conf}/zzz_php.ini"
+$php_timezone = "America/Los_Angeles"
+
 php::module { 'php5-curl': }
 php::module { 'php5-intl': }
 php::module { 'php5-mcrypt': }
 php::module { 'php5-mongo': }
+
+file { "${php_apache}/${php_conf}/30-mongo.ini":
+  ensure  => link,
+  target  => "${php_modules}/mongo.ini",
+  require => Php::Module['php5-mongo'],
+  notify  => Service['apache']
+}
+
+file { "${php_cli}/${php_conf}/30-mongo.ini":
+  ensure  => link,
+  target  => "${php_modules}/mongo.ini",
+  require => Php::Module['php5-mongo'],
+  notify  => Service['apache']
+}
 
 class { 'php::devel':
   require => Class['php']
@@ -99,17 +109,35 @@ if !defined(Package['git-core']) {
   package { 'git-core' : }
 }
 
-
 class { 'xdebug':
   service => 'apache'
 }
 
+file { '/etc/php5/conf.d':
+  ensure  => 'directory',
+  before  => File['/etc/php5/conf.d/suhosin.ini'],
+  require => Class['php']
+}
+
+file { '/etc/php5/conf.d/suhosin.ini':
+  ensure => present,
+  before => Class['composer']
+}
+
+include 'augeas'
+
 class { 'composer':
-  require => [ Package['php5'], Class['::nodejs'] ]
+  logoutput => true,
+  require   => [
+    Package['php5'],
+    Package['ruby-augeas'],
+    Class['::nodejs'] # nodejs module defines 'curl', also needed to install composer
+  ]
 }
 
 puphpet::ini { 'xdebug':
   value   => [
+    'xdebug.max_nesting_level = 300',
     'xdebug.default_enable = 1',
     'xdebug.remote_autostart = 0',
     'xdebug.remote_connect_back = 1',
@@ -117,26 +145,27 @@ puphpet::ini { 'xdebug':
     'xdebug.remote_handler = "dbgp"',
     'xdebug.remote_port = 9000'
   ],
-  ini     => '/etc/php5/conf.d/zzz_xdebug.ini',
+  ini     => "${php_apache}/${php_conf}/zzz_xdebug.ini",
   notify  => Service['apache'],
   require => Class['php']
 }
 
-puphpet::ini { 'php':
-  value   => [
-    'date.timezone = "America/Los_Angeles"'
-  ],
-  ini     => '/etc/php5/conf.d/zzz_php.ini',
-  notify  => Service['apache'],
-  require => Class['php']
-}
-
-puphpet::ini { 'custom':
+puphpet::ini { 'php_conf_apache2':
   value   => [
     'display_errors = On',
-    'error_reporting = -1'
+    'error_reporting = -1',
+    "date.timezone = \"${php_timezone}\""
   ],
-  ini     => '/etc/php5/conf.d/zzz_custom.ini',
+  ini     => "${php_apache}/${php_custom}",
+  notify  => Service['apache'],
+  require => Class['php']
+}
+
+puphpet::ini { 'php_conf_cli':
+  value   => [
+    "date.timezone = \"${php_timezone}\""
+  ],
+  ini     => "${php_cli}/${php_custom}",
   notify  => Service['apache'],
   require => Class['php']
 }
@@ -145,7 +174,7 @@ class { 'supervisord': }
 
 supervisord::program { 'stagehand':
   command           => '/usr/bin/env php app/console rabbitmq:consumer -m 20 stagify --env=dev',
-  user              => 'vagrant-root',
+  user              => 'root',
   directory         => $docroot,
   stdout_logfile    => "${docroot}/app/logs/dev.log"
 }
@@ -156,16 +185,32 @@ class { 'mongodb':
 
 include '::rabbitmq'
 
-package { [ 'python', 'g++', 'wget', 'tar' ]:
-  ensure => present,
-  before => Class['::nodejs']
-}
+class { '::nodejs': }
 
-class { '::nodejs':
-  manage_repo => true
+file { '/usr/bin/node':
+  ensure  => link,
+  target  => '/usr/bin/nodejs',
+  require => Package['npm']
 }
 
 package { [ 'bower', 'less', 'uglify-js', 'uglifycss' ]:
   provider => 'npm',
   require  => Class['::nodejs']
+}
+
+package { [ 'capistrano', 'capifony' ]:
+  provider => 'gem'
+}
+
+exec { 'app':
+  command     => "composer install --prefer-dist --profile -vvv",
+  environment => 'HOME=/home/vagrant',
+  cwd         => "${real_docroot}/../",
+  user        => 'vagrant',
+  onlyif      => "test -f ${real_docroot}/../composer.json",
+  logoutput   => true,
+  require     => [
+    Class['apache', 'php', 'composer'],
+    Package['bower']
+  ]
 }
