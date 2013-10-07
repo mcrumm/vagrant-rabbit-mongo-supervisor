@@ -237,5 +237,6 @@ exec { 'app':
   require     => [
     Class['apache', 'php', 'composer'],
     Package['bower']
-  ]
+  ],
+  notify     => Service['supervisor']
 }
