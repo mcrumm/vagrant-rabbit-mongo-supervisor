@@ -1,35 +1,41 @@
 Vagrant.configure("2") do |config|
 
-  config.vm.define :stagehand do |box|
+  config.vm.define :app do |app|
 
     local_path  = "/path/to/my/project"
-    local_port  = 8090
+
+    web_port      = 80
+    rabbitmq_port = 15672
+    mongodb_port  = 27017
 
     host_name    = "mybox"
     host_address = "10.100.12.101"
 
-    box.vm.box      = "mybox"
-    box.vm.box_url  = "http://puppet-vagrant-boxes.puppetlabs.com/debian-70rc1-x64-vbox4210.box"
+    app.vm.box     = "mybox"
+    app.vm.box_url = "http://mcrumm.s3.amazonaws.com/vagrant/boxes/debian-71-x64-vbox4218.box"
 
-    box.vm.network :private_network, ip: host_address
-    box.ssh.forward_agent = true
+    app.vm.network :private_network, ip: host_address
+    app.ssh.forward_agent = true
 
-    box.vm.hostname = host_name
+    app.vm.hostname = host_name
 
-    box.vm.provider :virtualbox do |v|
+    app.vm.provider :virtualbox do |v|
       v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
-      v.customize ["modifyvm", :id, "--memory", 512]
+      v.customize ["modifyvm", :id, "--memory", 1024]
       v.customize ["modifyvm", :id, "--name", host_name]
     end
 
     nfs_setting = RUBY_PLATFORM =~ /darwin/ || RUBY_PLATFORM =~ /linux/
-    box.vm.synced_folder local_path, "/var/www/#{host_name}.dev", id: "vagrant-root" , :nfs => nfs_setting
-    box.vm.network :forwarded_port, guest: 80, host: local_port
+    app.vm.synced_folder local_path, "/var/www/#{host_name}.dev", id: "vagrant-root" , :nfs => nfs_setting
 
-    box.vm.provision :shell, :inline =>
+    app.vm.network :forwarded_port, guest: 80,    host: web_port,      auto_corrext: true
+    app.vm.network :forwarded_port, guest: 15672, host: rabbitmq_port, auto_correct: true
+    app.vm.network :forwarded_port, guest: 27017, host: mongodb_port,  auto_correct: true
+
+    app.vm.provision :shell, :inline =>
       "if [[ ! -f /apt-get-run ]]; then sudo apt-get update && sudo touch /apt-get-run; fi"
 
-    box.vm.provision :puppet do |puppet|
+    app.vm.provision :puppet do |puppet|
       puppet.manifests_path = "manifests"
       puppet.module_path = "modules"
       puppet.options = ['--verbose']
