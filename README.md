@@ -51,7 +51,7 @@ $ vagrant ssh -e "ps aux | grep app/console"
 
 You should see output similar to the following:
 
-```
+```bash
 $ vagrant ssh -c "ps aux | grep app/console"
 root     21804 20.5  5.5 184756 28084 ?        S    18:53   0:00 php app/console rabbitmq:consumer -m 20 my_consumer --env=dev
 root     21805 72.5  9.1 203432 46516 ?        R    18:53   0:01 php app/console assetic:dump --watch --env=dev
