@@ -71,6 +71,7 @@ class { 'php':
 }
 
 $php_path     = "/etc/php5"
+$php_ini      = "php.ini"
 $php_modules  = "${php_path}/mods-available"
 $php_apache   = "${php_path}/apache2"
 $php_cli      = "${php_path}/cli"
@@ -126,6 +127,33 @@ file { '/etc/php5/conf.d/suhosin.ini':
 
 include 'augeas'
 
+php::augeas {
+  'php-apache2-disable_functions':
+    entry   => 'PHP/disable_functions',
+    ensure  => absent,
+    target  => "${php_apache}/${php_ini}",
+    require => [ Class['php'], Package['ruby-augeas'] ],
+    notify  => Service['apache'];
+  'php-apache2-date_timezone':
+    entry  => 'Date/date.timezone',
+    value  => "${php_timezone}",
+    target  => "${php_apache}/${php_ini}",
+    require => [ Class['php'], Package['ruby-augeas'] ],
+    notify  => Service['apache'];
+  'php-cli-disable_functions':
+    entry   => 'PHP/disable_functions',
+    ensure  => absent,
+    target  => "${php_cli}/${php_ini}",
+    require => [ Class['php'], Package['ruby-augeas'] ],
+    notify  => Service['apache'];
+  'php-cli-date_timezone':
+    entry  => 'Date/date.timezone',
+    value  => "${php_timezone}",
+    target  => "${php_cli}/${php_ini}",
+    require => [ Class['php'], Package['ruby-augeas'] ],
+    notify  => Service['apache'];
+}
+
 class { 'composer':
   logoutput => true,
   require   => [
@@ -153,19 +181,9 @@ puphpet::ini { 'xdebug':
 puphpet::ini { 'php_conf_apache2':
   value   => [
     'display_errors = On',
-    'error_reporting = -1',
-    "date.timezone = \"${php_timezone}\""
+    'error_reporting = -1'
   ],
   ini     => "${php_apache}/${php_custom}",
-  notify  => Service['apache'],
-  require => Class['php']
-}
-
-puphpet::ini { 'php_conf_cli':
-  value   => [
-    "date.timezone = \"${php_timezone}\""
-  ],
-  ini     => "${php_cli}/${php_custom}",
   notify  => Service['apache'],
   require => Class['php']
 }
