@@ -212,7 +212,7 @@ supervisord::program { 'assetic':
   command           => '/usr/bin/env php app/console assetic:dump --watch --env=dev',
   user              => 'root',
   directory         => $docroot,
-  stdout_logfile    => "${docroot}/app/logs/dev.log"
+  stdout_logfile    => "/tmp/assetic.log"
 }
 
 class { 'mongodb':
